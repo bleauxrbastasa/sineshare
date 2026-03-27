@@ -1,15 +1,19 @@
 export interface GearItem {
   id: string;
   item_name: string;
+  consignment: string;
   category: string;
   quantity: number;
   short_description: string;
+  retail_value_php: number | null;
+  total_php: number | null;
   daily_rate_php: number | null;
   replacement_value_php: number | null;
   inclusions: string;
   status: "Available" | "Unavailable" | "Reserved";
   notes: string;
   image_url: string;
+  created_at?: string;
 }
 
 export interface CartItem {
@@ -20,15 +24,25 @@ export interface CartItem {
 }
 
 export interface BookingRequest {
-  name: string;
-  mobile: string;
+  id?: string;
+  full_name: string;
+  mobile_number: string;
   facebook_name: string;
-  facebook_link: string;
   email: string;
   pickup_date: string;
   return_date: string;
-  items: CartItem[];
-  notes: string;
+  message: string;
+  booking_status: string;
+  created_at?: string;
+}
+
+export interface BookingRequestItem {
+  id?: string;
+  booking_request_id: string;
+  product_id: string;
+  quantity: number;
+  daily_rate_php: number | null;
+  created_at?: string;
 }
 
 export const CATEGORIES = [
