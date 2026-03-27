@@ -41,7 +41,7 @@ const About = () => (
             <Mail className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div>
               <h4 className="text-sm font-semibold text-foreground">Email</h4>
-              <p className="text-sm text-muted-foreground">sineshare@email.com</p>
+              <p className="text-sm text-muted-foreground">blue.bastasa@gmail.com</p>
             </div>
           </div>
           <div className="flex items-start gap-3 p-5 rounded-lg border border-border/50 bg-card">
@@ -54,7 +54,7 @@ const About = () => (
           <div className="flex items-start gap-3 p-5 rounded-lg border border-border/50 bg-card">
             <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-semibold text-foreground">Location</h4>
+              <h4 className="text-sm font-semibold text-foreground">DLSU, Taft Avenue, Manila</h4>
               <p className="text-sm text-muted-foreground">Philippines</p>
             </div>
           </div>
