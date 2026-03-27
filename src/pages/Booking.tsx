@@ -7,18 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useSubmitBooking } from "@/hooks/useBooking";
 import { Link } from "react-router-dom";
-import { Download, CheckCircle } from "lucide-react";
+import { Download, CheckCircle, Loader2 } from "lucide-react";
 
 const Booking = () => {
   const { items, clearCart } = useCart();
   const { toast } = useToast();
+  const submitBooking = useSubmitBooking();
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
     name: "",
     mobile: "",
     facebook_name: "",
-    facebook_link: "",
     email: "",
     notes: "",
   });
@@ -33,7 +34,7 @@ const Booking = () => {
       `Name: ${form.name}`,
       `Mobile: ${form.mobile}`,
       `Email: ${form.email}`,
-      `Facebook: ${form.facebook_name} (${form.facebook_link})`,
+      `Facebook: ${form.facebook_name}`,
       "",
       "SELECTED EQUIPMENT:",
       "-------------------",
@@ -69,7 +70,7 @@ const Booking = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.mobile || !form.email) {
       toast({ title: "Missing fields", description: "Please fill in all required fields.", variant: "destructive" });
@@ -79,8 +80,19 @@ const Booking = () => {
       toast({ title: "Empty cart", description: "Please add items to your cart first.", variant: "destructive" });
       return;
     }
-    // In a real app, this would send to Supabase + email
-    setSubmitted(true);
+    try {
+      await submitBooking.mutateAsync({
+        full_name: form.name,
+        mobile_number: form.mobile,
+        facebook_name: form.facebook_name,
+        email: form.email,
+        message: form.notes,
+        items,
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({ title: "Submission failed", description: err.message || "Something went wrong.", variant: "destructive" });
+    }
   };
 
   if (submitted) {
@@ -147,15 +159,9 @@ const Booking = () => {
               <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} className="bg-secondary border-border/50" required />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fb_name">Facebook Account Name</Label>
-                <Input id="fb_name" value={form.facebook_name} onChange={(e) => update("facebook_name", e.target.value)} className="bg-secondary border-border/50" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="fb_link">Facebook Account Link</Label>
-                <Input id="fb_link" value={form.facebook_link} onChange={(e) => update("facebook_link", e.target.value)} className="bg-secondary border-border/50" placeholder="https://facebook.com/..." />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="fb_name">Facebook Account Name</Label>
+              <Input id="fb_name" value={form.facebook_name} onChange={(e) => update("facebook_name", e.target.value)} className="bg-secondary border-border/50" />
             </div>
 
             <div className="space-y-2">
@@ -163,8 +169,12 @@ const Booking = () => {
               <Textarea id="notes" value={form.notes} onChange={(e) => update("notes", e.target.value)} className="bg-secondary border-border/50 min-h-[80px]" placeholder="Any special requests or notes for your booking..." />
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Submit Booking Request
+            <Button type="submit" className="w-full" size="lg" disabled={submitBooking.isPending}>
+              {submitBooking.isPending ? (
+                <><Loader2 className="mr-2 w-4 h-4 animate-spin" /> Submitting...</>
+              ) : (
+                "Submit Booking Request"
+              )}
             </Button>
           </form>
         )}

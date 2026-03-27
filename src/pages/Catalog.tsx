@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import GearCard from "@/components/GearCard";
 import SearchBar from "@/components/SearchBar";
 import CategoryFilter from "@/components/CategoryFilter";
-import { gearData } from "@/lib/gear-data";
+import { useProducts } from "@/hooks/useProducts";
 import { Category } from "@/lib/types";
 
 const Catalog = () => {
@@ -12,9 +12,10 @@ const Catalog = () => {
   const initialCat = (searchParams.get("category") as Category) || "All";
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>(initialCat);
+  const { data: products = [], isLoading } = useProducts();
 
   const filtered = useMemo(() => {
-    return gearData.filter((item) => {
+    return products.filter((item) => {
       const matchesCat = category === "All" || item.category === category;
       const matchesSearch =
         !search ||
@@ -23,7 +24,7 @@ const Catalog = () => {
         item.category.toLowerCase().includes(search.toLowerCase());
       return matchesCat && matchesSearch;
     });
-  }, [search, category]);
+  }, [search, category, products]);
 
   return (
     <Layout>
@@ -39,7 +40,9 @@ const Catalog = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{filtered.length} items found</p>
+          <p className="text-sm text-muted-foreground">
+            {isLoading ? "Loading..." : `${filtered.length} items found`}
+          </p>
         </div>
 
         {filtered.length > 0 ? (
@@ -48,11 +51,11 @@ const Catalog = () => {
               <GearCard key={gear.id} gear={gear} />
             ))}
           </div>
-        ) : (
+        ) : !isLoading ? (
           <div className="text-center py-20">
             <p className="text-muted-foreground">No equipment found matching your criteria.</p>
           </div>
-        )}
+        ) : null}
       </div>
     </Layout>
   );

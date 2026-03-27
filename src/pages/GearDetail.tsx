@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { format } from "date-fns";
 import Layout from "@/components/Layout";
-import { gearData } from "@/lib/gear-data";
+import { useProduct } from "@/hooks/useProducts";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -17,11 +17,21 @@ const GearDetail = () => {
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { toast } = useToast();
-  const gear = gearData.find((g) => g.id === id);
+  const { data: gear, isLoading } = useProduct(id);
 
   const [quantity, setQuantity] = useState(1);
   const [pickupDate, setPickupDate] = useState<Date>();
   const [returnDate, setReturnDate] = useState<Date>();
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!gear) {
     return (

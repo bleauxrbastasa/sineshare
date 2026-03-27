@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { gearData } from "@/lib/gear-data";
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { GearItem, CATEGORIES } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,22 +8,28 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, Trash2, Plus, X, Search } from "lucide-react";
+import { Pencil, Trash2, Plus, X, Loader2 } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 
 const Admin = () => {
   const { toast } = useToast();
-  const [items, setItems] = useState<GearItem[]>(gearData);
+  const { data: items = [], isLoading } = useProducts();
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+
   const [editing, setEditing] = useState<GearItem | null>(null);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
 
-  const emptyItem: GearItem = {
-    id: "",
+  const emptyItem: Omit<GearItem, "id"> = {
     item_name: "",
+    consignment: "N",
     category: "Cameras",
     quantity: 1,
     short_description: "",
+    retail_value_php: null,
+    total_php: null,
     daily_rate_php: null,
     replacement_value_php: null,
     inclusions: "",
@@ -32,7 +38,7 @@ const Admin = () => {
     image_url: "/placeholder.svg",
   };
 
-  const [formData, setFormData] = useState<GearItem>(emptyItem);
+  const [formData, setFormData] = useState<any>(emptyItem);
 
   const filtered = items.filter(
     (i) =>
@@ -47,33 +53,43 @@ const Admin = () => {
   };
 
   const handleNew = () => {
-    setFormData({ ...emptyItem, id: `item-${Date.now()}` });
+    setFormData({ ...emptyItem });
     setEditing(null);
     setShowForm(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.item_name) {
       toast({ title: "Name required", variant: "destructive" });
       return;
     }
-    if (editing) {
-      setItems((prev) => prev.map((i) => (i.id === editing.id ? formData : i)));
-      toast({ title: "Item updated" });
-    } else {
-      setItems((prev) => [...prev, formData]);
-      toast({ title: "Item added" });
+    try {
+      if (editing) {
+        const { created_at, ...updates } = formData;
+        await updateProduct.mutateAsync(updates);
+        toast({ title: "Item updated" });
+      } else {
+        const { id, created_at, ...newItem } = formData;
+        await createProduct.mutateAsync(newItem);
+        toast({ title: "Item added" });
+      }
+      setShowForm(false);
+      setEditing(null);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
     }
-    setShowForm(false);
-    setEditing(null);
   };
 
-  const handleDelete = (id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-    toast({ title: "Item deleted" });
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteProduct.mutateAsync(id);
+      toast({ title: "Item deleted" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
   };
 
-  const update = (field: keyof GearItem, value: any) => setFormData((p) => ({ ...p, [field]: value }));
+  const update = (field: string, value: any) => setFormData((p: any) => ({ ...p, [field]: value }));
 
   return (
     <Layout>
@@ -143,6 +159,21 @@ const Admin = () => {
                 <Label>Image URL</Label>
                 <Input value={formData.image_url} onChange={(e) => update("image_url", e.target.value)} className="bg-secondary border-border/50" />
               </div>
+              <div className="space-y-2">
+                <Label>Consignment</Label>
+                <select
+                  value={formData.consignment || "N"}
+                  onChange={(e) => update("consignment", e.target.value)}
+                  className="w-full bg-secondary border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground"
+                >
+                  <option value="Y">Yes</option>
+                  <option value="N">No</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Retail Value (₱)</Label>
+                <Input type="number" value={formData.retail_value_php || ""} onChange={(e) => update("retail_value_php", e.target.value ? Number(e.target.value) : null)} className="bg-secondary border-border/50" />
+              </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label>Short Description</Label>
                 <Textarea value={formData.short_description} onChange={(e) => update("short_description", e.target.value)} className="bg-secondary border-border/50" />
@@ -157,7 +188,11 @@ const Admin = () => {
               </div>
             </div>
             <div className="flex gap-3">
-              <Button onClick={handleSave}>{editing ? "Save Changes" : "Add Item"}</Button>
+              <Button onClick={handleSave} disabled={createProduct.isPending || updateProduct.isPending}>
+                {(createProduct.isPending || updateProduct.isPending) ? (
+                  <><Loader2 className="mr-2 w-4 h-4 animate-spin" /> Saving...</>
+                ) : editing ? "Save Changes" : "Add Item"}
+              </Button>
               <Button variant="outline" onClick={() => setShowForm(false)} className="border-border/50 text-foreground hover:bg-secondary">Cancel</Button>
             </div>
           </div>
@@ -165,7 +200,9 @@ const Admin = () => {
 
         <SearchBar value={search} onChange={setSearch} placeholder="Search inventory..." />
 
-        <div className="text-sm text-muted-foreground">{filtered.length} items</div>
+        <div className="text-sm text-muted-foreground">
+          {isLoading ? "Loading..." : `${filtered.length} items`}
+        </div>
 
         <div className="space-y-2">
           {filtered.map((item) => (

@@ -1,12 +1,12 @@
 export interface GearItem {
   id: string;
   item_name: string;
-  consignment: string;
+  consignment?: string;
   category: string;
   quantity: number;
   short_description: string;
-  retail_value_php: number | null;
-  total_php: number | null;
+  retail_value_php?: number | null;
+  total_php?: number | null;
   daily_rate_php: number | null;
   replacement_value_php: number | null;
   inclusions: string;
