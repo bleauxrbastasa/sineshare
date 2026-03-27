@@ -13,13 +13,19 @@ const categories = [
 const Index = () => (
   <Layout>
     {/* Hero */}
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(210_70%_55%/0.08),transparent_70%)]" />
+<section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+  <div
+    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+    style={{ backgroundImage: "url('/images/hero_bg.PNG')" }}
+  />
+  <div className="absolute inset-0 bg-black/55" />
+  <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/60 to-background" />
+  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(210_70%_55%/0.08),transparent_70%)]" />
+
       <div className="relative container mx-auto px-4 sm:px-6 text-center space-y-8">
         <div className="space-y-4 max-w-3xl mx-auto">
           <p className="text-sm font-medium tracking-[0.2em] uppercase text-primary animate-fade-in">
-            Premium Equipment Rental
+            Video and Audio Equipment Rental
           </p>
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-bold tracking-tight text-foreground animate-fade-in" style={{ animationDelay: "0.1s" }}>
             Gear that tells<br />
