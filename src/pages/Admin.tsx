@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
+import AdminLogin from "@/components/AdminLogin";
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { GearItem, CATEGORIES } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,16 @@ import { Pencil, Trash2, Plus, X, Loader2 } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 
 const Admin = () => {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem("sineshare_admin") === "1");
+
+  if (!authed) {
+    return <AdminLogin onAuth={() => setAuthed(true)} />;
+  }
+
+  return <AdminPanel />;
+};
+
+const AdminPanel = () => {
   const { toast } = useToast();
   const { data: items = [], isLoading } = useProducts();
   const createProduct = useCreateProduct();

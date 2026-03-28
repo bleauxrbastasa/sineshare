@@ -8,14 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useSubmitBooking } from "@/hooks/useBooking";
+import { supabase } from "@/integrations/supabase/client";
+import { generateBookingPDF, getBookingPDFBase64 } from "@/lib/generateBookingPDF";
 import { Link } from "react-router-dom";
 import { Download, CheckCircle, Loader2 } from "lucide-react";
+import type { CartItem } from "@/lib/types";
 
 const Booking = () => {
   const { items, clearCart } = useCart();
   const { toast } = useToast();
   const submitBooking = useSubmitBooking();
   const [submitted, setSubmitted] = useState(false);
+  const [bookingId, setBookingId] = useState("");
+  const [submittedAt, setSubmittedAt] = useState<Date>(new Date());
   const [form, setForm] = useState({
     name: "",
     mobile: "",
@@ -24,50 +29,25 @@ const Booking = () => {
     notes: "",
   });
 
+  // Keep a snapshot of items for PDF after cart is cleared
+  const [submittedItems, setSubmittedItems] = useState<CartItem[]>([]);
+
   const update = (field: string, value: string) => setForm((p) => ({ ...p, [field]: value }));
 
-  const generatePDFContent = () => {
-    const lines: string[] = [
-      "SINESHARE - BOOKING REQUEST",
-      "===========================",
-      "",
-      `Name: ${form.name}`,
-      `Mobile: ${form.mobile}`,
-      `Email: ${form.email}`,
-      `Facebook: ${form.facebook_name}`,
-      "",
-      "SELECTED EQUIPMENT:",
-      "-------------------",
-    ];
-    items.forEach((item) => {
-      const days = differenceInDays(item.return_date, item.pickup_date) || 1;
-      lines.push(`• ${item.gear.item_name} × ${item.quantity}`);
-      lines.push(`  Pickup: ${format(item.pickup_date, "MMM d, yyyy")} | Return: ${format(item.return_date, "MMM d, yyyy")} (${days} day${days !== 1 ? "s" : ""})`);
-      if (item.gear.daily_rate_php) {
-        lines.push(`  Rate: ₱${item.gear.daily_rate_php.toLocaleString()}/day | Subtotal: ₱${(item.gear.daily_rate_php * item.quantity * days).toLocaleString()}`);
-      }
-      lines.push("");
-    });
-    const total = items.reduce((sum, item) => {
-      const days = differenceInDays(item.return_date, item.pickup_date) || 1;
-      return sum + (item.gear.daily_rate_php || 0) * item.quantity * days;
-    }, 0);
-    lines.push(`ESTIMATED TOTAL: ₱${total.toLocaleString()}`);
-    if (form.notes) {
-      lines.push("", `NOTES: ${form.notes}`);
-    }
-    return lines.join("\n");
-  };
+  const getPDFData = (bId: string, date: Date, cartItems: CartItem[]) => ({
+    bookingId: bId,
+    name: form.name,
+    mobile: form.mobile,
+    email: form.email,
+    facebookName: form.facebook_name || undefined,
+    notes: form.notes || undefined,
+    items: cartItems,
+    submittedAt: date,
+  });
 
-  const handleDownloadPDF = () => {
-    const content = generatePDFContent();
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `sineshare-booking-${form.name.replace(/\s/g, "_")}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDownloadPDF = async () => {
+    const doc = await generateBookingPDF(getPDFData(bookingId, submittedAt, submittedItems));
+    doc.save(`sineshare-booking-${bookingId}.pdf`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,7 +61,7 @@ const Booking = () => {
       return;
     }
     try {
-      await submitBooking.mutateAsync({
+      const booking = await submitBooking.mutateAsync({
         full_name: form.name,
         mobile_number: form.mobile,
         facebook_name: form.facebook_name,
@@ -89,7 +69,48 @@ const Booking = () => {
         message: form.notes,
         items,
       });
+
+      const bId = booking.id;
+      const now = new Date();
+      setBookingId(bId);
+      setSubmittedAt(now);
+      setSubmittedItems([...items]);
       setSubmitted(true);
+
+      // Generate PDF base64 and send email (fire-and-forget, don't block UX)
+      const pdfData = getPDFData(bId, now, items);
+      getBookingPDFBase64(pdfData)
+        .then((pdfBase64) => {
+          const emailItems = items.map((item) => {
+            const days = differenceInDays(item.return_date, item.pickup_date) || 1;
+            return {
+              name: item.gear.item_name,
+              quantity: item.quantity,
+              pickupDate: format(item.pickup_date, "MMM d, yyyy"),
+              returnDate: format(item.return_date, "MMM d, yyyy"),
+              dailyRate: item.gear.daily_rate_php,
+              days,
+              subtotal: (item.gear.daily_rate_php || 0) * item.quantity * days,
+            };
+          });
+          const estimatedTotal = emailItems.reduce((s, i) => s + i.subtotal, 0);
+
+          return supabase.functions.invoke("send-booking-email", {
+            body: {
+              bookingId: bId,
+              customerName: form.name,
+              mobile: form.mobile,
+              email: form.email,
+              facebookName: form.facebook_name || undefined,
+              notes: form.notes || undefined,
+              submittedAt: format(now, "MMMM d, yyyy 'at' h:mm a"),
+              items: emailItems,
+              estimatedTotal,
+              pdfBase64,
+            },
+          });
+        })
+        .catch((err) => console.error("Email send failed:", err));
     } catch (err: any) {
       toast({ title: "Submission failed", description: err.message || "Something went wrong.", variant: "destructive" });
     }
@@ -105,7 +126,7 @@ const Booking = () => {
             Thank you, we will be contacting you within 1-24 hours through the provided details under the name <strong className="text-foreground">"Bleaux "Bleu" R. Bastasa"</strong>. Please download the PDF for future reference.
           </p>
           <Button onClick={handleDownloadPDF} className="gap-2">
-            <Download className="w-4 h-4" /> Download Booking Summary
+            <Download className="w-4 h-4" /> Download Booking Summary (PDF)
           </Button>
           <div>
             <Button asChild variant="outline" onClick={() => clearCart()} className="mt-4 border-border/50 text-foreground hover:bg-secondary">
