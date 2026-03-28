@@ -8,7 +8,7 @@ const About = () => (
       <section className="space-y-6">
         <h1 className="text-3xl font-display font-bold text-foreground">About Sineshare</h1>
         <p className="text-muted-foreground leading-relaxed">
-          Sineshare is a camera rental service in Manila built for students, student filmmakers, and small creative teams who need reliable gear without overspending.
+          Sineshare is a camera rental service in Manila run by students, built for students, student filmmakers, and small creative teams who need reliable gear without overspending.
            </p>
            <p className="text-muted-foreground leading-relaxed">
 I started Sineshare as a computer engineering student after seeing how difficult it was for students to access good camera equipment at fair rates. Most of the time, the options were either too expensive, hard to book, or unclear about what was actually included.
