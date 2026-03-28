@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
+import AdminLogin from "@/components/AdminLogin";
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { GearItem, CATEGORIES } from "@/lib/types";
 import { Button } from "@/components/ui/button";
