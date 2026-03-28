@@ -13,6 +13,16 @@ import { Pencil, Trash2, Plus, X, Loader2 } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 
 const Admin = () => {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem("sineshare_admin") === "1");
+
+  if (!authed) {
+    return <AdminLogin onAuth={() => setAuthed(true)} />;
+  }
+
+  return <AdminPanel />;
+};
+
+const AdminPanel = () => {
   const { toast } = useToast();
   const { data: items = [], isLoading } = useProducts();
   const createProduct = useCreateProduct();
