@@ -8,10 +8,18 @@ const About = () => (
       <section className="space-y-6">
         <h1 className="text-3xl font-display font-bold text-foreground">About Sineshare</h1>
         <p className="text-muted-foreground leading-relaxed">
-          Sineshare is a curated camera and film equipment rental service built for filmmakers, photographers, and creative teams. We provide production-ready gear — from full-frame cinema rigs and vintage lenses to professional lighting and sound — at transparent daily rates.
+          Sineshare is a camera rental service in Manila built for students, student filmmakers, and small creative teams who need reliable gear without overspending.
+           </p>
+           <p className="text-muted-foreground leading-relaxed">
+I started Sineshare as a computer engineering student after seeing how difficult it was for students to access good camera equipment at fair rates. Most of the time, the options were either too expensive, hard to book, or unclear about what was actually included.
         </p>
         <p className="text-muted-foreground leading-relaxed">
-          Every piece in our inventory is inspected, tested, and maintained. Whether you're shooting a short film, a commercial, content for social media, or a student project, we make it easy to find the right gear and get it when you need it.
+          Our goal is simple: make camera rentals easier, more affordable, and more trustworthy for people creating school projects, short films, content, and passion projects around Manila.
+        </p>
+            <p className="text-muted-foreground leading-relaxed">
+          Every item in our catalog is checked before release, clearly listed, and priced transparently. We also keep the process straightforward, from inquiry to pickup, so you know exactly what to expect.
+
+          Whether you’re shooting your thesis, a class requirement, or your next creative project, Sineshare is here to help you get the gear you need without the usual hassle.
         </p>
       </section>
 
@@ -41,7 +49,7 @@ const About = () => (
             <Mail className="w-5 h-5 text-primary shrink-0 mt-0.5" />
             <div>
               <h4 className="text-sm font-semibold text-foreground">Email</h4>
-              <p className="text-sm text-muted-foreground">blue.bastasa@gmail.com</p>
+              <p className="text-sm text-muted-foreground">blue.r.bastasa@gmail.com</p>
             </div>
           </div>
           <div className="flex items-start gap-3 p-5 rounded-lg border border-border/50 bg-card">

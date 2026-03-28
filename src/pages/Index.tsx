@@ -32,7 +32,7 @@ const Index = () => (
             <span className="text-gradient">your story</span>
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Professional camera and film equipment for filmmakers, photographers, and creative productions. Browse, select, and book — simple as that.
+            Student owned, taft based Video and Audio Equipment Rental. Browse, select, and book — simple as that.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>

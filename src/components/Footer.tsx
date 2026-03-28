@@ -7,7 +7,7 @@ const Footer = () => (
         <div>
           <h3 className="font-display text-lg font-bold text-foreground mb-3">SINESHARE</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Premium camera and film equipment rental for filmmakers, photographers, and creative productions.
+            Camera, lighting, audio, and production equipment rental for student filmmakers, photographers, and creative teams. Sineshare is run by a DLSU-Manila student, with gear curated for real school and indie shoots.
           </p>
         </div>
         <div>
@@ -21,7 +21,7 @@ const Footer = () => (
         <div>
           <h4 className="text-sm font-semibold text-foreground mb-3">Contact</h4>
           <p className="text-sm text-muted-foreground">Reach out for inquiries and bookings.</p>
-          <p className="text-sm text-primary mt-2">sineshare@email.com</p>
+          <p className="text-sm text-primary mt-2">blue.r.bastasa@gmail.com or FB: "Bleu Bastasa" </p>
         </div>
       </div>
       <div className="mt-10 pt-6 border-t border-border/50 text-center">
