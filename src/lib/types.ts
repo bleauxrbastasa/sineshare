@@ -51,6 +51,7 @@ export const CATEGORIES = [
   "Lenses",
   "Monitors",
   "Lights",
+  "Gimbals",
   "Sound",
   "Accessories",
   "Focus Puller Rig",
